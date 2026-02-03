@@ -1,0 +1,13 @@
+<clickhouse>
+    <http_server_default_response><![CDATA[
+        <html>
+            <head>
+                <title>ClickHouse</title>
+            </head>
+            <body>
+                <h1>ClickHouse server is running</h1>
+                <p><a href="/play">Go to Query Interface</a></p>
+            </body>
+        </html>
+    ]]></http_server_default_response>
+</clickhouse>

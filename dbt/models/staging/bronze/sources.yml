@@ -1,0 +1,59 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: "Raw ecommerce events from Iceberg Bronze layer"
+    schema: bronze
+    
+    tables:
+      - name: ecommerce_events
+        loaded_at_field: _ingestion_time
+        description: "Raw event stream from ecommerce platform"
+        
+        columns:
+          - name: event_time
+            description: "Event timestamp as string (UTC)"
+            data_tests:
+              - not_null
+          
+          - name: event_type
+            description: "Type of event: view, cart, purchase, remove_from_cart"
+            data_tests:
+              - not_null
+              - accepted_values:
+                  values: ['view', 'cart', 'purchase', 'remove_from_cart']
+          
+          - name: user_id
+            description: "Unique user identifier"
+            data_tests:
+              - not_null
+          
+          - name: user_session
+            description: "Session ID"
+          
+          - name: product_id
+            description: "Product ID (nullable - some events don't have products)"
+          
+          - name: category_code
+            description: "Product category hierarchy (dot-separated)"
+          
+          - name: brand
+            description: "Product brand name"
+          
+          - name: price
+            description: "Product price (nullable or >= 0)"
+          
+          - name: _processing_date
+            description: "Partition column - ingestion date"
+            data_tests:
+              - not_null
+          
+          - name: _ingestion_time
+            description: "Bronze ingestion timestamp"
+          
+          - name: _source_file
+            description: "Source CSV filename"
+
+        freshness:
+          warn_after: {count: 24, period: hour}
+          error_after: {count: 48, period: hour}

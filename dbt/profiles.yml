@@ -1,0 +1,13 @@
+ecommerce_lakehouse:
+  target: dev
+  outputs:
+    dev:
+      type: spark
+      method: thrift
+      host: spark-thrift
+      port: 10000
+      user: dbt_user
+      schema: silver
+      threads: 1
+      connect_timeout: 60
+      connect_retries: 5

@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  # Core Business Tables
+  - name: gold_daily_sales_summary
+    description: "Daily sales and conversion metrics"
+    columns:
+      - name: sale_date
+        description: "Date of sales"
+        data_tests:
+          - unique
+          - not_null
+      - name: total_revenue
+        description: "Total revenue for the day"
+        data_tests:
+          - not_null
+      - name: conversion_rate
+        description: "View to purchase conversion rate"
+
+  - name: gold_product_performance
+    description: "Product-level performance metrics"
+    columns:
+      - name: product_id
+        description: "Unique product identifier"
+        data_tests:
+          - unique
+          - not_null
+      - name: total_revenue
+        description: "Lifetime revenue from product"
+
+  - name: gold_category_performance
+    description: "Category performance by date"
+    columns:
+      - name: analysis_date
+        description: "Analysis date"
+        data_tests:
+          - not_null
+      - name: category_level_1
+        description: "Top level category"
+        data_tests:
+          - not_null
+
+  - name: gold_user_rfm_segments
+    description: "RFM customer segmentation"
+    columns:
+      - name: user_id
+        description: "Unique user identifier"
+        data_tests:
+          - unique
+          - not_null
+      - name: rfm_segment
+        description: "Customer segment"
+        data_tests:
+          - accepted_values:
+              values: ['Champions', 'Loyal Customers', 'Potential Loyalists', 'At Risk', 'Cannot Lose Them', 'Hibernating', 'Lost', 'New Customers']
+
+  # Funnel Analysis Tables
+  - name: gold_conversion_funnel_daily
+    description: "Daily conversion funnel metrics"
+    columns:
+      - name: analysis_date
+        description: "Analysis date"
+        data_tests:
+          - not_null
+      - name: stage_1_view_users
+        description: "Users who viewed"
+        data_tests:
+          - not_null
+
+  - name: gold_user_journey_funnel
+    description: "User-level funnel tracking"
+    columns:
+      - name: user_id
+        description: "Unique user identifier"
+        data_tests:
+          - unique
+          - not_null
+      - name: current_funnel_stage
+        description: "Current stage in funnel"
+        data_tests:
+          - accepted_values:
+              values: ['viewer_only', 'cart_abandoner', 'purchaser', 'repeat_buyer', 'unknown']
+
+  # Traffic Table
+  - name: gold_hourly_traffic
+    description: "Hourly traffic patterns"
+    columns:
+      - name: event_date
+        description: "Event date"
+        data_tests:
+          - not_null
+      - name: event_hour
+        description: "Hour of day (0-23)"
+        data_tests:
+          - not_null

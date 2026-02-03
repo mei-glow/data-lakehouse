@@ -1,0 +1,63 @@
+version: 2
+
+models:
+  - name: silver_ecommerce_events
+    description: "Cleaned and standardized ecommerce events"
+    
+    columns:
+      - name: event_unique_id
+        description: "MD5 hash unique identifier"
+        data_tests:
+          - unique
+          - not_null
+      
+      - name: event_timestamp
+        description: "Parsed event timestamp"
+        data_tests:
+          - not_null
+      
+      - name: event_date
+        description: "Event date (partition key)"
+        data_tests:
+          - not_null
+      
+      - name: event_type
+        description: "Validated event type"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['view', 'cart', 'purchase', 'remove_from_cart']
+      
+      - name: user_id
+        description: "Required user identifier"
+        data_tests:
+          - not_null
+      
+      - name: product_id
+        description: "Optional product identifier"
+      
+      - name: price
+        description: "Validated price (NULL or >= 0)"
+        data_tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+              where: "price IS NOT NULL"
+      
+      - name: brand
+        description: "Standardized brand name (uppercase, trimmed)"
+      
+      - name: price_bucket
+        description: "Price range category"
+        data_tests:
+          - accepted_values:
+              values: ['UNKNOWN', '0-50', '50-100', '100-200', '200-500', '500+']
+      
+      - name: time_of_day
+        description: "Time period of event"
+        data_tests:
+          - accepted_values:
+              values: ['MORNING', 'AFTERNOON', 'EVENING', 'NIGHT']
+      
+      - name: is_weekend
+        description: "Boolean flag for weekend events"
