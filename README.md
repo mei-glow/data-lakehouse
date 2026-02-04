@@ -58,6 +58,7 @@ This repository implements a modern data lakehouse architecture using open-sourc
      4. `04_gold_aggregation`
      5. `05_clickhouse_complete_setup`
      6. `06_superset_dashboard`
+     7. `07_schema_evolution_demo` (new DAG for schema evolution demo)
    - Alternatively, you can trigger DAGs via the Airflow CLI:
      ```powershell
      docker-compose exec airflow-webserver airflow dags trigger <dag_id>
@@ -94,17 +95,10 @@ This repository implements a modern data lakehouse architecture using open-sourc
 - (Optional) Python 3.12+ for local development
 - Stable internet connection (for downloading datasets and Docker images)
 
-## Requisite (Yêu cầu hệ thống)
+## Prequisite (Yêu cầu hệ thống)
 - Windows, macOS, hoặc Linux (khuyến nghị Windows cho hướng dẫn này)
 - Tối thiểu 16 GB RAM
 - Tối thiểu 100 GB dung lượng ổ đĩa trống
 - Docker & Docker Compose (khuyến nghị bản mới nhất)
 - (Tùy chọn) Python 3.12+ cho phát triển local
 - Kết nối internet ổn định (để tải dataset và Docker images)
-
-## License
-MIT License
-
----
-
-> For detailed setup and troubleshooting, see the documentation in each service's folder.
