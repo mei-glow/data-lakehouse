@@ -45,8 +45,8 @@ def discover_and_save_file_list(**context):
     with open(output_file, 'w') as f:
         json.dump(file_list, f, indent=2)
     
-    logging.info(f"✅ Saved {len(file_list)} files to {output_file}")
-    logging.info(f"📄 File list:")
+    logging.info(f" Saved {len(file_list)} files to {output_file}")
+    logging.info(f" File list:")
     for f in file_list:
         logging.info(f"   - {f['file_name']}")
     
@@ -72,11 +72,11 @@ with DAG(
         bash_command="""
         set -e
         
-        echo "📄 File list location: /opt/airflow/data/bronze_file_list.json"
+        echo " File list location: /opt/airflow/data/bronze_file_list.json"
         cat /opt/airflow/data/bronze_file_list.json
         
         echo ""
-        echo "🚀 Submitting Spark job..."
+        echo " Submitting Spark job..."
         
         # Submit Spark job with --file-list pointing to JSON file
         docker exec spark-master /opt/spark/bin/spark-submit \
@@ -92,9 +92,9 @@ with DAG(
         EXIT_CODE=$?
         
         if [ $EXIT_CODE -eq 0 ]; then
-            echo "✅ Spark job completed successfully"
+            echo " Spark job completed successfully"
         else
-            echo "❌ Spark job failed with exit code: $EXIT_CODE"
+            echo " Spark job failed with exit code: $EXIT_CODE"
             exit $EXIT_CODE
         fi
         """,

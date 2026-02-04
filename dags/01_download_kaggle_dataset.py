@@ -58,7 +58,7 @@ def download_kaggle_dataset(**context):
             check=True,
         )
 
-        logging.info("✅ Download & unzip successful")
+        logging.info(" Download & unzip successful")
         logging.info(result.stdout)
 
         # Remove leftover zip files
@@ -79,7 +79,7 @@ def download_kaggle_dataset(**context):
             reverse=True,
         )
 
-        logging.info(f"✅ Found {len(csv_files_sorted)} CSV files:")
+        logging.info(f" Found {len(csv_files_sorted)} CSV files:")
         for f in csv_files_sorted:
             size_mb = os.path.getsize(f) / (1024 * 1024)
             logging.info(f"   - {os.path.basename(f)} ({size_mb:.2f} MB)")
@@ -90,7 +90,7 @@ def download_kaggle_dataset(**context):
         return csv_files_sorted
 
     except subprocess.CalledProcessError as e:
-        logging.error("❌ Kaggle CLI failed")
+        logging.error(" Kaggle CLI failed")
         logging.error(e.stderr)
         raise
 
@@ -121,7 +121,7 @@ def verify_dataset(**context):
     verified_files = []
 
     for file_path in csv_files:
-        logging.info(f"\n📄 Verifying: {os.path.basename(file_path)}")
+        logging.info(f"\n Verifying: {os.path.basename(file_path)}")
         
         # Read sample
         df = pd.read_csv(file_path, nrows=100)
@@ -136,9 +136,9 @@ def verify_dataset(**context):
         with open(file_path, 'r') as f:
             total_rows = sum(1 for _ in f) - 1  # exclude header
         
-        logging.info(f"   ✅ Size: {file_size_mb:.2f} MB")
-        logging.info(f"   ✅ Rows: {total_rows:,}")
-        logging.info(f"   ✅ Columns: {df.columns.tolist()}")
+        logging.info(f"   Size: {file_size_mb:.2f} MB")
+        logging.info(f"   Rows: {total_rows:,}")
+        logging.info(f"   Columns: {df.columns.tolist()}")
         
         verified_files.append({
             "path": file_path,
@@ -146,7 +146,7 @@ def verify_dataset(**context):
             "rows": total_rows,
         })
 
-    logging.info(f"\n✅ All {len(csv_files)} CSV files verified!")
+    logging.info(f"\n All {len(csv_files)} CSV files verified!")
     
     # Push verified files to XCom
     ti.xcom_push(key="verified_files", value=verified_files)
@@ -186,9 +186,9 @@ def upload_all_to_minio(**context):
         if not client.bucket_exists(bucket_name):
             logging.warning(f"Creating bucket '{bucket_name}'...")
             client.make_bucket(bucket_name)
-            logging.info(f"✅ Bucket created")
+            logging.info(f" Bucket created")
         else:
-            logging.info(f"✅ Bucket '{bucket_name}' exists")
+            logging.info(f" Bucket '{bucket_name}' exists")
         
         upload_date = datetime.now().strftime("%Y-%m-%d")
         uploaded_objects = []
@@ -198,7 +198,7 @@ def upload_all_to_minio(**context):
             file_name = os.path.basename(file_path)
             object_name = f"raw/ecommerce/{upload_date}/{file_name}"
             
-            logging.info(f"\n📤 Uploading: {file_name}")
+            logging.info(f"\n Uploading: {file_name}")
             logging.info(f"   → s3://{bucket_name}/{object_name}")
             
             file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
@@ -215,7 +215,7 @@ def upload_all_to_minio(**context):
             stat = client.stat_object(bucket_name, object_name)
             uploaded_size_mb = stat.size / (1024 * 1024)
             
-            logging.info(f"   ✅ Uploaded: {uploaded_size_mb:.2f} MB")
+            logging.info(f"    Uploaded: {uploaded_size_mb:.2f} MB")
             
             uploaded_objects.append({
                 "file_name": file_name,
@@ -224,7 +224,7 @@ def upload_all_to_minio(**context):
                 "size_mb": uploaded_size_mb,
             })
         
-        logging.info(f"\n🎉 Successfully uploaded {len(uploaded_objects)} files to MinIO!")
+        logging.info(f"\n Successfully uploaded {len(uploaded_objects)} files to MinIO!")
         
         # Push to XCom
         ti.xcom_push(key="bucket_name", value=bucket_name)
@@ -234,10 +234,10 @@ def upload_all_to_minio(**context):
         return uploaded_objects
         
     except S3Error as e:
-        logging.error(f"❌ MinIO S3 Error: {e}")
+        logging.error(f" MinIO S3 Error: {e}")
         raise
     except Exception as e:
-        logging.error(f"❌ Upload failed: {e}")
+        logging.error(f" Upload failed: {e}")
         raise
 
 
@@ -267,7 +267,7 @@ def verify_minio_upload(**context):
             secure=False
         )
         
-        logging.info(f"📂 Verifying {len(uploaded_objects)} files in MinIO:")
+        logging.info(f" Verifying {len(uploaded_objects)} files in MinIO:")
         
         total_size = 0
         
@@ -279,25 +279,25 @@ def verify_minio_upload(**context):
             size_mb = stat.size / (1024 * 1024)
             total_size += size_mb
             
-            logging.info(f"\n✅ {obj['file_name']}")
+            logging.info(f"\n {obj['file_name']}")
             logging.info(f"   Path: s3://{bucket_name}/{object_name}")
             logging.info(f"   Size: {size_mb:.2f} MB")
             logging.info(f"   Modified: {stat.last_modified}")
         
-        logging.info(f"\n📊 Summary:")
+        logging.info(f"\n Summary:")
         logging.info(f"   Total files: {len(uploaded_objects)}")
         logging.info(f"   Total size: {total_size:.2f} MB")
         logging.info(f"   Bucket: {bucket_name}")
         
         # List all objects in prefix
-        logging.info(f"\n📂 All files in s3://{bucket_name}/raw/ecommerce/:")
+        logging.info(f"\n All files in s3://{bucket_name}/raw/ecommerce/:")
         objects = client.list_objects(bucket_name, prefix="raw/ecommerce/", recursive=True)
         
         for obj in objects:
             obj_size_mb = obj.size / (1024 * 1024)
             logging.info(f"   - {obj.object_name} ({obj_size_mb:.2f} MB)")
         
-        logging.info("\n✅ MinIO upload verification passed!")
+        logging.info("\n MinIO upload verification passed!")
         
         return {
             "bucket": bucket_name,
@@ -306,7 +306,7 @@ def verify_minio_upload(**context):
         }
         
     except S3Error as e:
-        logging.error(f"❌ MinIO verification failed: {e}")
+        logging.error(f" MinIO verification failed: {e}")
         raise
 
 

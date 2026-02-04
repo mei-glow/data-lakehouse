@@ -9,7 +9,7 @@ def create_spark_session(app_name: str) -> SparkSession:
     Create Spark session (Iceberg REST catalog + MinIO)
     chạy trong container spark-master (đã có Java)
     """
-    logger.info("🔧 Creating Spark session: %s", app_name)
+    logger.info(" Creating Spark session: %s", app_name)
 
     spark = (
         SparkSession.builder
@@ -43,5 +43,5 @@ def create_spark_session(app_name: str) -> SparkSession:
         .getOrCreate()
     )
 
-    logger.info("✅ Spark created | version=%s", spark.version)
+    logger.info(" Spark created | version=%s", spark.version)
     return spark

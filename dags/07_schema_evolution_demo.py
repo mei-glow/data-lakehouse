@@ -15,8 +15,8 @@ default_args = {
 SPARK_SUBMIT_BASE = r"""
 set -e
 
-echo "🚀 Submitting Spark job..."
-echo "⏰ Start: $(date '+%Y-%m-%d %H:%M:%S')"
+echo " Submitting Spark job..."
+echo " Start: $(date '+%Y-%m-%d %H:%M:%S')"
 echo ""
 
 docker exec spark-master /opt/spark/bin/spark-submit \
@@ -32,12 +32,12 @@ docker exec spark-master /opt/spark/bin/spark-submit \
 EXIT_CODE=$?
 
 echo ""
-echo "⏰ End: $(date '+%Y-%m-%d %H:%M:%S')"
+echo " End: $(date '+%Y-%m-%d %H:%M:%S')"
 
 if [ $EXIT_CODE -eq 0 ]; then
-  echo "✅ Spark job completed successfully"
+  echo " Spark job completed successfully"
 else
-  echo "❌ Spark job failed with exit code: $EXIT_CODE"
+  echo " Spark job failed with exit code: $EXIT_CODE"
   exit $EXIT_CODE
 fi
 """
@@ -96,22 +96,22 @@ with DAG(
         bash_command=r"""
         echo ""
         echo "╔════════════════════════════════════════════════════════════════╗"
-        echo "║     ✅ SCHEMA EVOLUTION DEMO COMPLETED SUCCESSFULLY!          ║"
+        echo "║      SCHEMA EVOLUTION DEMO COMPLETED SUCCESSFULLY!          ║"
         echo "╚════════════════════════════════════════════════════════════════╝"
         echo ""
-        echo "📋 What happened:"
+        echo "What happened:"
         echo "   1. ✓ Checked original Bronze table schema"
         echo "   2. ✓ Added 'payment_method' column via ALTER TABLE"
         echo "   3. ✓ Inserted new data with payment_method values"
         echo "   4. ✓ Verified old data still works (payment_method = NULL)"
         echo ""
-        echo "🎯 Apache Iceberg Features Demonstrated:"
+        echo "Apache Iceberg Features Demonstrated:"
         echo "   ✨ Schema Evolution without data rewrite"
         echo "   ✨ Backward compatibility (old data readable)"
         echo "   ✨ Forward compatibility (new queries work)"
         echo "   ✨ Snapshot-based time travel capability"
         echo ""
-        echo "💡 This proves Iceberg can handle production schema changes!"
+        echo "This proves Iceberg can handle production schema changes!"
         echo ""
         """,
     )

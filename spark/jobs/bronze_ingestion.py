@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 def create_spark_session():
     """Tạo Spark session với Iceberg + MinIO configs"""
     
-    logger.info("🔧 Creating Spark session...")
+    logger.info(" Creating Spark session...")
     
     spark = SparkSession.builder \
         .appName("Bronze Ingestion - eCommerce") \
@@ -72,7 +72,7 @@ def create_spark_session():
     spark.sparkContext._jsc.hadoopConfiguration().set("fs.s3a.aws.credentials.provider", 
                                                        "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
     
-    logger.info("✅ Spark session created")
+    logger.info(" Spark session created")
     logger.info(f"   Spark version: {spark.version}")
     logger.info(f"   App Name: {spark.sparkContext.appName}")
     
@@ -84,11 +84,11 @@ def create_spark_session():
 def create_bronze_table(spark):
     """Tạo Bronze database và table nếu chưa có"""
     
-    logger.info("🏗️  Creating Bronze database and table...")
+    logger.info("  Creating Bronze database and table...")
     
     # Create namespace
     spark.sql("CREATE NAMESPACE IF NOT EXISTS iceberg.bronze")
-    logger.info("✅ Database 'bronze' created/verified")
+    logger.info(" Database 'bronze' created/verified")
     
     # Create table
     create_table_ddl = """
@@ -119,10 +119,10 @@ def create_bronze_table(spark):
     """
     
     spark.sql(create_table_ddl)
-    logger.info("✅ Table 'ecommerce_events' created/verified")
+    logger.info(" Table 'ecommerce_events' created/verified")
     
     # Show schema
-    logger.info("📋 Table Schema:")
+    logger.info(" Table Schema:")
     spark.sql("DESCRIBE iceberg.bronze.ecommerce_events").show(truncate=False)
 
 
@@ -138,7 +138,7 @@ def ingest_csv_files(spark, file_list):
         file_list: List of dicts with 'file_name' and 's3a_path'
     """
     
-    logger.info(f"📦 Processing {len(file_list)} CSV files...")
+    logger.info(f" Processing {len(file_list)} CSV files...")
     
     total_records = 0
     
@@ -147,48 +147,48 @@ def ingest_csv_files(spark, file_list):
         s3a_path = file_info['s3a_path']
         
         logger.info(f"\n{'='*60}")
-        logger.info(f"📄 File {idx}/{len(file_list)}: {file_name}")
+        logger.info(f" File {idx}/{len(file_list)}: {file_name}")
         logger.info(f"{'='*60}")
         
         try:
             # Read CSV
-            logger.info(f"📖 Reading CSV from: {s3a_path}")
+            logger.info(f" Reading CSV from: {s3a_path}")
             df = spark.read \
                 .option("header", "true") \
                 .option("inferSchema", "true") \
                 .csv(s3a_path)
             
             record_count = df.count()
-            logger.info(f"✅ Read {record_count:,} records")
+            logger.info(f" Read {record_count:,} records")
             
             # Add metadata columns
-            logger.info("➕ Adding metadata columns...")
+            logger.info(" Adding metadata columns...")
             df_enriched = df \
                 .withColumn("_ingestion_time", current_timestamp()) \
                 .withColumn("_source_file", lit(file_name)) \
                 .withColumn("_processing_date", to_date(current_timestamp()))
             
             # Sample preview
-            logger.info("🔍 Sample data (first 3 rows):")
+            logger.info(" Sample data (first 3 rows):")
             df_enriched.select(
                 "event_time", "event_type", "product_id", "price",
                 "_source_file", "_processing_date"
             ).show(3, truncate=False)
             
             # Write to Iceberg
-            logger.info("💾 Writing to Iceberg...")
+            logger.info(" Writing to Iceberg...")
             df_enriched.writeTo("iceberg.bronze.ecommerce_events") \
                 .option("write-format", "parquet") \
                 .append()
             
-            logger.info(f"✅ Ingested {record_count:,} records from {file_name}")
+            logger.info(f" Ingested {record_count:,} records from {file_name}")
             total_records += record_count
             
         except Exception as e:
-            logger.error(f"❌ Failed to process {file_name}: {e}")
+            logger.error(f" Failed to process {file_name}: {e}")
             raise
     
-    logger.info(f"\n🎉 Total records ingested: {total_records:,}")
+    logger.info(f"\n Total records ingested: {total_records:,}")
     return total_records
 
 
@@ -199,16 +199,16 @@ def verify_ingestion(spark):
     """Verify dữ liệu sau khi ingest"""
     
     logger.info("\n" + "="*60)
-    logger.info("🔍 VERIFICATION CHECKS")
+    logger.info(" VERIFICATION CHECKS")
     logger.info("="*60)
     
     # Check 1: Total records
-    logger.info("\n📊 CHECK 1: Total records")
+    logger.info("\n CHECK 1: Total records")
     total = spark.sql("SELECT COUNT(*) as cnt FROM iceberg.bronze.ecommerce_events").collect()[0].cnt
     logger.info(f"   Total: {total:,} records")
     
     # Check 2: Partitions
-    logger.info("\n📂 CHECK 2: Partitions")
+    logger.info("\n CHECK 2: Partitions")
     spark.sql("""
         SELECT _processing_date, COUNT(*) as count
         FROM iceberg.bronze.ecommerce_events
@@ -217,7 +217,7 @@ def verify_ingestion(spark):
     """).show()
     
     # Check 3: Source files
-    logger.info("\n📄 CHECK 3: Source files")
+    logger.info("\n CHECK 3: Source files")
     spark.sql("""
         SELECT _source_file, COUNT(*) as count
         FROM iceberg.bronze.ecommerce_events
@@ -226,7 +226,7 @@ def verify_ingestion(spark):
     """).show()
     
     # Check 4: Event types
-    logger.info("\n📈 CHECK 4: Event type distribution")
+    logger.info("\n CHECK 4: Event type distribution")
     spark.sql("""
         SELECT 
             event_type,
@@ -238,7 +238,7 @@ def verify_ingestion(spark):
     """).show()
     
     # Check 5: Sample data
-    logger.info("\n🔬 CHECK 5: Sample records")
+    logger.info("\n CHECK 5: Sample records")
     spark.sql("""
         SELECT 
             event_time, event_type, brand, price,
@@ -247,7 +247,7 @@ def verify_ingestion(spark):
         LIMIT 5
     """).show(truncate=False)
     
-    logger.info("\n✅ Verification complete!")
+    logger.info("\n Verification complete!")
     
     return {
         "total_records": total,
@@ -273,16 +273,16 @@ def main():
     
     # Read file list from JSON file
     try:
-        logger.info(f"📄 Reading file list from: {args.file_list}")
+        logger.info(f" Reading file list from: {args.file_list}")
         with open(args.file_list, 'r') as f:
             file_list = json.load(f)
-        logger.info(f"✅ Loaded {len(file_list)} files")
+        logger.info(f" Loaded {len(file_list)} files")
     except Exception as e:
-        logger.error(f"❌ Failed to read file list: {e}")
+        logger.error(f" Failed to read file list: {e}")
         return 1
     
     logger.info("\n" + "="*80)
-    logger.info("🚀 BRONZE LAYER INGESTION JOB STARTED")
+    logger.info(" BRONZE LAYER INGESTION JOB STARTED")
     logger.info("="*80)
     logger.info(f"Mode: {args.mode}")
     logger.info(f"Files to process: {len(file_list)}")
@@ -304,19 +304,19 @@ def main():
             result = verify_ingestion(spark)
         
         logger.info("\n" + "="*80)
-        logger.info("✅ JOB COMPLETED SUCCESSFULLY")
+        logger.info(" JOB COMPLETED SUCCESSFULLY")
         logger.info("="*80)
         
         return 0
         
     except Exception as e:
-        logger.error(f"\n❌ JOB FAILED: {e}", exc_info=True)
+        logger.error(f"\n JOB FAILED: {e}", exc_info=True)
         return 1
         
     finally:
         if spark:
             spark.stop()
-            logger.info("🛑 Spark session stopped")
+            logger.info(" Spark session stopped")
 
 
 if __name__ == "__main__":

@@ -12,15 +12,15 @@ def main():
         spark = create_spark_session("Schema Evolution - Lightweight Verify")
 
         logger.info("=" * 80)
-        logger.info("🔎 LIGHTWEIGHT SCHEMA EVOLUTION VERIFICATION")
+        logger.info(" LIGHTWEIGHT SCHEMA EVOLUTION VERIFICATION")
         logger.info("=" * 80)
 
         # 1️⃣ Check schema (metadata only, rất nhẹ)
-        logger.info("📋 Checking table schema...")
+        logger.info(" Checking table schema...")
         spark.sql(f"DESCRIBE TABLE {TABLE}").show(truncate=False)
 
         # 2️⃣ Sample vài dòng có payment_method (dữ liệu mới)
-        logger.info("🆕 Sample rows WITH payment_method (new schema data)")
+        logger.info(" Sample rows WITH payment_method (new schema data)")
         spark.sql(f"""
             SELECT event_time, event_type, price, payment_method, _source_file
             FROM {TABLE}
@@ -29,7 +29,7 @@ def main():
         """).show(truncate=False)
 
         # 3️⃣ Sample vài dòng không có payment_method (dữ liệu cũ)
-        logger.info("📜 Sample rows WITHOUT payment_method (old schema data)")
+        logger.info(" Sample rows WITHOUT payment_method (old schema data)")
         spark.sql(f"""
             SELECT event_time, event_type, price, payment_method, _source_file
             FROM {TABLE}
@@ -38,7 +38,7 @@ def main():
         """).show(truncate=False)
 
         # 4️⃣ Check snapshot history (metadata, rất nhẹ)
-        logger.info("📸 Iceberg Snapshot History (latest 5)")
+        logger.info(" Iceberg Snapshot History (latest 5)")
         spark.sql(f"""
             SELECT committed_at, snapshot_id, operation
             FROM {TABLE}.snapshots
@@ -46,7 +46,7 @@ def main():
             LIMIT 5
         """).show(truncate=False)
 
-        logger.info("✅ LIGHTWEIGHT VERIFICATION COMPLETE!")
+        logger.info(" LIGHTWEIGHT VERIFICATION COMPLETE!")
 
     finally:
         if spark:

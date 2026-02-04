@@ -37,19 +37,19 @@ with DAG(
         """,
     )
 
-    # ✅ dbt run với real-time Thrift monitoring
+    #  dbt run với real-time Thrift monitoring
     dbt_run_silver = BashOperator(
         task_id="dbt_run_silver",
         bash_command="""
         set -e
         
-        echo "🔄 Starting dbt transformation..."
-        echo "⏰ Start: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo " Starting dbt transformation..."
+        echo " Start: $(date '+%Y-%m-%d %H:%M:%S')"
         echo ""
         
         # Start monitoring Thrift logs in background
         (
-            echo "📊 Monitoring Thrift Server logs..."
+            echo " Monitoring Thrift Server logs..."
             while true; do
                 docker logs spark-thrift --tail 5 2>&1 | grep -E "Starting task|Finished task|stage.*finished" || true
                 sleep 3
@@ -68,10 +68,10 @@ with DAG(
         kill $MONITOR_PID 2>/dev/null || true
         
         echo ""
-        echo "⏰ End: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo " End: $(date '+%Y-%m-%d %H:%M:%S')"
         
         if [ $DBT_EXIT -eq 0 ]; then
-            echo "✅ dbt run completed successfully"
+            echo " dbt run completed successfully"
         fi
         """,
         execution_timeout=timedelta(minutes=30),
@@ -97,5 +97,5 @@ with DAG(
         """,
     )
 
-    # 🔗 DEPENDENCY
+    #  DEPENDENCY
     start >> dbt_deps >> dbt_run_silver >> dbt_test_silver >> dbt_docs

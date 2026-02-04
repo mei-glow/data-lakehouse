@@ -14,7 +14,7 @@ def main():
         spark = create_spark_session("Schema Evolution - Insert New Data")
 
         logger.info("=" * 80)
-        logger.info("📝 INSERTING NEW DATA WITH payment_method")
+        logger.info(" INSERTING NEW DATA WITH payment_method")
         logger.info("=" * 80)
 
         sample_data = [
@@ -36,18 +36,18 @@ def main():
               .withColumn("_processing_date", to_date(current_timestamp()))
         )
 
-        logger.info("📊 Sample data to insert:")
+        logger.info(" Sample data to insert:")
         df_enriched.select(
             "event_time", "event_type", "product_id", "price",
             "payment_method", "_processing_date", "_source_file"
         ).show(truncate=False)
 
-        logger.info("💾 Writing to Iceberg...")
+        logger.info(" Writing to Iceberg...")
         df_enriched.writeTo(TABLE).append()
 
-        logger.info("✅ Insert completed!")
+        logger.info(" Insert completed!")
 
-        logger.info("🔍 Verify inserted rows:")
+        logger.info(" Verify inserted rows:")
         spark.sql(f"""
             SELECT event_time, event_type, brand, price, payment_method, _source_file
             FROM {TABLE}

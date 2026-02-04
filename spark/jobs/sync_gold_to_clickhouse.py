@@ -56,7 +56,7 @@ def create_spark_session():
         .config("spark.sql.defaultCatalog", "iceberg") \
         .getOrCreate()
     
-    logger.info("✅ Spark session created")
+    logger.info(" Spark session created")
     return spark
 
 
@@ -77,10 +77,10 @@ def sync_table(spark, table_name):
         df = spark.table(iceberg_table)
         
         row_count = df.count()
-        logger.info(f"✅ Read {row_count:,} rows")
+        logger.info(f" Read {row_count:,} rows")
         
         if row_count == 0:
-            logger.warning(f"⚠️  No data in {iceberg_table}, skipping...")
+            logger.warning(f"  No data in {iceberg_table}, skipping...")
             return
         
         # Write to ClickHouse (overwrite mode)
@@ -97,17 +97,17 @@ def sync_table(spark, table_name):
             .mode("append") \
             .save()
         
-        logger.info(f"✅ Synced {row_count:,} rows to ClickHouse")
+        logger.info(f" Synced {row_count:,} rows to ClickHouse")
         
     except Exception as e:
-        logger.error(f"❌ Failed to sync {table_name}: {e}")
+        logger.error(f" Failed to sync {table_name}: {e}")
         raise
 
 def main():
     """Main sync process"""
     
     logger.info("\n" + "="*80)
-    logger.info("🚀 GOLD TO CLICKHOUSE SYNC JOB")
+    logger.info(" GOLD TO CLICKHOUSE SYNC JOB")
     logger.info("="*80)
     
     spark = None
@@ -122,19 +122,19 @@ def main():
             total_synced += 1
         
         logger.info("\n" + "="*80)
-        logger.info(f"✅ SYNC COMPLETE: {total_synced}/{len(TABLES_TO_SYNC)} tables")
+        logger.info(f" SYNC COMPLETE: {total_synced}/{len(TABLES_TO_SYNC)} tables")
         logger.info("="*80)
         
         return 0
         
     except Exception as e:
-        logger.error(f"\n❌ SYNC FAILED: {e}", exc_info=True)
+        logger.error(f"\n SYNC FAILED: {e}", exc_info=True)
         return 1
         
     finally:
         if spark:
             spark.stop()
-            logger.info("🛑 Spark session stopped")
+            logger.info(" Spark session stopped")
 
 if __name__ == "__main__":
     sys.exit(main())

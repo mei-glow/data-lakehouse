@@ -12,26 +12,26 @@ def main():
         spark = create_spark_session("Schema Evolution - Add Column")
 
         logger.info("=" * 80)
-        logger.info("➕ ADDING NEW COLUMN: payment_method")
+        logger.info(" ADDING NEW COLUMN: payment_method")
         logger.info("=" * 80)
 
         # Idempotent: nếu cột đã tồn tại thì skip
         cols = [r.col_name for r in spark.sql(f"DESCRIBE {TABLE}").collect() if r.col_name and not r.col_name.startswith("#")]
         if "payment_method" in cols:
-            logger.info("⏭️ Column payment_method already exists -> skip ALTER")
+            logger.info(" Column payment_method already exists -> skip ALTER")
         else:
-            logger.info("🔧 Executing ALTER TABLE ADD COLUMN payment_method ...")
+            logger.info(" Executing ALTER TABLE ADD COLUMN payment_method ...")
             spark.sql(f"""
                 ALTER TABLE {TABLE}
                 ADD COLUMN payment_method STRING
                 COMMENT 'Payment method: credit_card, debit_card, paypal, cash_on_delivery'
             """)
-            logger.info("✅ Column added successfully!")
+            logger.info(" Column added successfully!")
 
-        logger.info("🔍 New schema:")
+        logger.info(" New schema:")
         spark.sql(f"DESCRIBE {TABLE}").show(truncate=False)
 
-        logger.info("📸 Snapshot History (latest 5):")
+        logger.info(" Snapshot History (latest 5):")
         spark.sql(f"""
             SELECT committed_at, snapshot_id, operation, summary
             FROM {TABLE}.snapshots

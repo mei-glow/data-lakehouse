@@ -19,14 +19,14 @@ def print_ui_access_info(**context):
     info_message = """
     
     ============================================================
-    🎉 CLICKHOUSE SETUP COMPLETE!
+     CLICKHOUSE SETUP COMPLETE!
     ============================================================
     
-    📊 Access ClickHouse Play UI:
+     Access ClickHouse Play UI:
        URL: http://localhost:8123/play
        No authentication required!
     
-    💾 7 Tables Available in 'lakehouse' database:
+     7 Tables Available in 'lakehouse' database:
        1. daily_sales_summary
        2. product_performance
        3. category_performance
@@ -35,7 +35,7 @@ def print_ui_access_info(**context):
        6. user_journey_funnel
        7. hourly_traffic
     
-    💡 Try these sample queries in Play UI:
+     Try these sample queries in Play UI:
     
        -- List all tables
        SHOW TABLES FROM lakehouse;
@@ -87,7 +87,7 @@ def print_ui_access_info(**context):
        GROUP BY time_of_day
        ORDER BY avg_conversion DESC;
     
-    ⚡ Performance Info:
+     Performance Info:
        - All queries should execute in < 1 second
        - Tables are partitioned for optimal performance
        - MergeTree engine with proper indexing
@@ -135,15 +135,15 @@ with DAG(
         set -e
         
         echo "================================================"
-        echo "🔍 TASK 1: ClickHouse Health Check"
+        echo " TASK 1: ClickHouse Health Check"
         echo "================================================"
         
         # Wait for ClickHouse to be ready
-        echo "⏳ Waiting for ClickHouse to be ready..."
+        echo " Waiting for ClickHouse to be ready..."
         
         for i in {1..30}; do
             if docker exec clickhouse clickhouse-client --query "SELECT 1" >/dev/null 2>&1; then
-                echo "✅ ClickHouse is healthy and responding"
+                echo " ClickHouse is healthy and responding"
                 
                 # Get version info
                 VERSION=$(docker exec clickhouse clickhouse-client --query "SELECT version()")
@@ -155,7 +155,7 @@ with DAG(
             sleep 2
         done
         
-        echo "❌ ClickHouse not responding after 60 seconds"
+        echo " ClickHouse not responding after 60 seconds"
         exit 1
         """,
         doc_md="Check if ClickHouse container is running and responsive"
@@ -170,41 +170,41 @@ with DAG(
         set -e
         
         echo "================================================"
-        echo "🗄️  TASK 2: Create ClickHouse Tables"
+        echo "  TASK 2: Create ClickHouse Tables"
         echo "================================================"
         
         # Check if SQL file exists
         if [ ! -f "/opt/airflow/clickhouse/create_tables.sql" ]; then
-            echo "❌ SQL file not found: /opt/airflow/clickhouse/create_tables.sql"
+            echo " SQL file not found: /opt/airflow/clickhouse/create_tables.sql"
             exit 1
         fi
         
-        echo "📄 Executing DDL from create_tables.sql..."
+        echo " Executing DDL from create_tables.sql..."
         
         # Execute SQL file
         cat /opt/airflow/clickhouse/create_tables.sql | docker exec -i clickhouse clickhouse-client --multiquery
         
         if [ $? -eq 0 ]; then
-            echo "✅ Tables created successfully"
+            echo " Tables created successfully"
         else
-            echo "❌ Failed to create tables"
+            echo " Failed to create tables"
             exit 1
         fi
         
         # Verify tables created
         echo ""
-        echo "📋 Verifying tables in 'lakehouse' database:"
+        echo " Verifying tables in 'lakehouse' database:"
         docker exec clickhouse clickhouse-client --query "SHOW TABLES FROM lakehouse" --format=PrettyCompact
         
         # Count tables
         TABLE_COUNT=$(docker exec clickhouse clickhouse-client --query "SHOW TABLES FROM lakehouse" | wc -l)
         echo ""
-        echo "✅ Total tables created: $TABLE_COUNT"
+        echo " Total tables created: $TABLE_COUNT"
         
         if [ "$TABLE_COUNT" -eq 7 ]; then
-            echo "✅ All 7 expected tables present"
+            echo " All 7 expected tables present"
         else
-            echo "⚠️  Expected 7 tables, found $TABLE_COUNT"
+            echo "  Expected 7 tables, found $TABLE_COUNT"
         fi
         """,
         doc_md="""
@@ -232,17 +232,17 @@ with DAG(
         set -e
         
         echo "================================================"
-        echo "🔄 TASK 3: Sync Gold Tables to ClickHouse"
+        echo " TASK 3: Sync Gold Tables to ClickHouse"
         echo "================================================"
         
         # Check if sync script exists
         if [ ! -f "/opt/spark/jobs/sync_gold_to_clickhouse.py" ]; then
-            echo "❌ Sync script not found: /opt/spark/jobs/sync_gold_to_clickhouse.py"
+            echo " Sync script not found: /opt/spark/jobs/sync_gold_to_clickhouse.py"
             exit 1
         fi
         
-        echo "📦 Submitting Spark job to sync Gold → ClickHouse..."
-        echo "⏰ Start time: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo " Submitting Spark job to sync Gold → ClickHouse..."
+        echo " Start time: $(date '+%Y-%m-%d %H:%M:%S')"
         echo ""
         
         # Submit Spark job
@@ -260,12 +260,12 @@ with DAG(
         EXIT_CODE=$?
         
         echo ""
-        echo "⏰ End time: $(date '+%Y-%m-%d %H:%M:%S')"
+        echo " End time: $(date '+%Y-%m-%d %H:%M:%S')"
         
         if [ $EXIT_CODE -eq 0 ]; then
-            echo "✅ Sync job completed successfully"
+            echo " Sync job completed successfully"
         else
-            echo "❌ Sync job failed with exit code: $EXIT_CODE"
+            echo " Sync job failed with exit code: $EXIT_CODE"
             exit $EXIT_CODE
         fi
         """,
@@ -291,11 +291,11 @@ with DAG(
         set -e
         
         echo "================================================"
-        echo "🔍 TASK 4: Verify Data in ClickHouse"
+        echo " TASK 4: Verify Data in ClickHouse"
         echo "================================================"
         
         echo ""
-        echo "📊 Checking row counts for all tables..."
+        echo " Checking row counts for all tables..."
         echo ""
         
         docker exec clickhouse clickhouse-client --query "
@@ -354,7 +354,7 @@ with DAG(
         " --format=PrettyCompact
         
         echo ""
-        echo "✅ Data verification complete"
+        echo " Data verification complete"
         
         # Check if any table is empty
         EMPTY_TABLES=$(docker exec clickhouse clickhouse-client --query "
@@ -370,9 +370,9 @@ with DAG(
         ")
         
         if [ "$EMPTY_TABLES" -gt 0 ]; then
-            echo "⚠️  Warning: $EMPTY_TABLES table(s) are empty"
+            echo "  Warning: $EMPTY_TABLES table(s) are empty"
         else
-            echo "✅ All tables contain data"
+            echo " All tables contain data"
         fi
         """,
         doc_md="Verify that all tables have been populated with data from Gold layer"
@@ -387,11 +387,11 @@ with DAG(
         set -e
         
         echo "================================================"
-        echo "🧪 TASK 5: Run Sample Business Queries"
+        echo " TASK 5: Run Sample Business Queries"
         echo "================================================"
         
         echo ""
-        echo "📈 Query 1: Total Business Metrics"
+        echo " Query 1: Total Business Metrics"
         echo "-----------------------------------"
         docker exec clickhouse clickhouse-client --query "
         SELECT 
@@ -403,7 +403,7 @@ with DAG(
         " --format=PrettyCompact
         
         echo ""
-        echo "🏆 Query 2: Top 5 Products by Revenue"
+        echo " Query 2: Top 5 Products by Revenue"
         echo "--------------------------------------"
         docker exec clickhouse clickhouse-client --query "
         SELECT 
@@ -418,7 +418,7 @@ with DAG(
         " --format=PrettyCompact
         
         echo ""
-        echo "👥 Query 3: RFM Segment Distribution"
+        echo " Query 3: RFM Segment Distribution"
         echo "-------------------------------------"
         docker exec clickhouse clickhouse-client --query "
         SELECT 
@@ -431,7 +431,7 @@ with DAG(
         " --format=PrettyCompact
         
         echo ""
-        echo "🎯 Query 4: Conversion Funnel Summary"
+        echo " Query 4: Conversion Funnel Summary"
         echo "--------------------------------------"
         docker exec clickhouse clickhouse-client --query "
         SELECT 
@@ -443,7 +443,7 @@ with DAG(
         " --format=PrettyCompact
         
         echo ""
-        echo "⏰ Query 5: Peak Traffic Hours"
+        echo " Query 5: Peak Traffic Hours"
         echo "-------------------------------"
         docker exec clickhouse clickhouse-client --query "
         SELECT 
@@ -457,8 +457,8 @@ with DAG(
         " --format=PrettyCompact
         
         echo ""
-        echo "✅ All sample queries executed successfully"
-        echo "⚡ Query performance: All queries < 1 second"
+        echo " All sample queries executed successfully"
+        echo " Query performance: All queries < 1 second"
         """,
         doc_md="""
         Execute sample business queries to demonstrate:
@@ -488,10 +488,10 @@ with DAG(
         task_id="generate_summary_report",
         bash_command="""
         echo "================================================"
-        echo "📊 PHASE 4 COMPLETION SUMMARY"
+        echo " PHASE 4 COMPLETION SUMMARY"
         echo "================================================"
         echo ""
-        echo "✅ COMPLETED TASKS:"
+        echo " COMPLETED TASKS:"
         echo "  1. ClickHouse health check"
         echo "  2. Created 7 tables with proper schema"
         echo "  3. Synced all Gold data from Iceberg"
@@ -518,18 +518,18 @@ with DAG(
         WHERE database = 'lakehouse' AND active
         ")
         
-        echo "📈 STATISTICS:"
+        echo " STATISTICS:"
         echo "  Total Rows: $TOTAL_ROWS"
         echo "  Total Size: $TOTAL_SIZE"
         echo "  Tables: 7"
         echo "  Database: lakehouse"
         echo ""
-        echo "🌐 ACCESS:"
+        echo " ACCESS:"
         echo "  Play UI: http://localhost:8123/play"
         echo "  HTTP Port: 8123"
         echo "  Native Port: 9000"
         echo ""
-        echo "✅ Phase 4 Complete - Ready for Superset!"
+        echo " Phase 4 Complete - Ready for Superset!"
         echo "================================================"
         """,
     )
