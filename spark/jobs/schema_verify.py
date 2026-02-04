@@ -9,60 +9,44 @@ TABLE = "iceberg.bronze.ecommerce_events"
 def main():
     spark = None
     try:
-        spark = create_spark_session("Schema Evolution - Verify Compatibility")
+        spark = create_spark_session("Schema Evolution - Lightweight Verify")
 
         logger.info("=" * 80)
-        logger.info("🔄 VERIFYING BACKWARD COMPATIBILITY")
+        logger.info("🔎 LIGHTWEIGHT SCHEMA EVOLUTION VERIFICATION")
         logger.info("=" * 80)
 
-        logger.info("📊 Query 1: Count records by payment_method (NULL -> LEGACY_DATA)")
-        spark.sql(f"""
-            SELECT
-                COALESCE(payment_method, 'LEGACY_DATA') AS payment_method,
-                COUNT(*) AS count,
-                MIN(event_time) AS earliest_event,
-                MAX(event_time) AS latest_event
-            FROM {TABLE}
-            GROUP BY payment_method
-            ORDER BY count DESC
-        """).show(truncate=False)
+        # 1️⃣ Check schema (metadata only, rất nhẹ)
+        logger.info("📋 Checking table schema...")
+        spark.sql(f"DESCRIBE TABLE {TABLE}").show(truncate=False)
 
-        logger.info("📊 Query 2: Old vs new data by _source_file")
+        # 2️⃣ Sample vài dòng có payment_method (dữ liệu mới)
+        logger.info("🆕 Sample rows WITH payment_method (new schema data)")
         spark.sql(f"""
-            SELECT
-                _source_file,
-                COUNT(*) AS total_records,
-                COUNT(payment_method) AS records_with_payment,
-                COUNT(*) - COUNT(payment_method) AS records_without_payment
+            SELECT event_time, event_type, price, payment_method, _source_file
             FROM {TABLE}
-            GROUP BY _source_file
-            ORDER BY total_records DESC
+            WHERE payment_method IS NOT NULL
             LIMIT 10
         """).show(truncate=False)
 
-        logger.info("📊 Query 3: Sample mixed data (latest 10)")
+        # 3️⃣ Sample vài dòng không có payment_method (dữ liệu cũ)
+        logger.info("📜 Sample rows WITHOUT payment_method (old schema data)")
         spark.sql(f"""
-            SELECT
-                event_time,
-                event_type,
-                price,
-                payment_method,
-                CASE WHEN payment_method IS NULL THEN 'OLD_SCHEMA' ELSE 'NEW_SCHEMA' END AS data_version,
-                _source_file
+            SELECT event_time, event_type, price, payment_method, _source_file
             FROM {TABLE}
-            ORDER BY event_time DESC
+            WHERE payment_method IS NULL
             LIMIT 10
         """).show(truncate=False)
 
+        # 4️⃣ Check snapshot history (metadata, rất nhẹ)
         logger.info("📸 Iceberg Snapshot History (latest 5)")
         spark.sql(f"""
-            SELECT committed_at, snapshot_id, operation, summary
+            SELECT committed_at, snapshot_id, operation
             FROM {TABLE}.snapshots
             ORDER BY committed_at DESC
             LIMIT 5
         """).show(truncate=False)
 
-        logger.info("✅ SCHEMA EVOLUTION VERIFICATION COMPLETE!")
+        logger.info("✅ LIGHTWEIGHT VERIFICATION COMPLETE!")
 
     finally:
         if spark:
